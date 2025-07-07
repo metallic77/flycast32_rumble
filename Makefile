@@ -255,7 +255,6 @@ else ifeq ($(platform), brick)
 #######################################
 
 # Generic AArch64 Cortex-A35 OpenGL ES 2.0 target (R36s)
-# ATTENTION - RE-ENABLE POSTPROCESS TO COMPILE at the meantime
 else ifeq ($(platform), arm64_cortex_a35_gles2)
 	EXT ?= so
 	TARGET := $(TARGET_NAME)_libretro.$(EXT)
@@ -351,7 +350,6 @@ else ifeq ($(platform), classic_armv8_a35)
 
 # sun8i Allwinner H2+ / H3 for mainline Builds
 # like Orange PI, Nano PI, Banana PI, Tritium, Sunvell R69, AlphaCore2
-# Miyoo A30
 # by MPCORE-HUB/Liontek1985
 
 else ifeq ($(platform), sun8i)
