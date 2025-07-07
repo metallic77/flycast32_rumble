@@ -23,7 +23,7 @@ HAVE_CLANG    ?= 0
 HAVE_CDROM    := 0
 ENABLE_MODEM  := 1
 
-TARGET_NAME   := flycast
+TARGET_NAME   := flycast32_rumble
 
 ifeq ($(HAVE_CLANG),1)
 	CXX      = ${CC_PREFIX}clang++
@@ -228,6 +228,57 @@ else ifneq (,$(findstring rpi,$(platform)))
 		CORE_DEFINES += -DLOW_END
 	endif
 
+# ARM64 TRIMUI BRICK 
+else ifeq ($(platform), brick)
+ 	EXT ?= so
+	CC_AS    = ${CC_PREFIX}${CC} #The ngen_arm.S must be compiled with gcc
+	TARGET := $(TARGET_NAME)_libretro.$(EXT)
+	SHARED += -shared -Wl,--version-script=link.T
+	LDFLAGS +=  -Wl,--no-undefined
+	fpic = -fPIC
+	LIBS += -lrt
+	ARM_FLOAT_ABI_HARD = 0
+	FORCE_GLES = 1
+	SINGLE_PREC_FLAGS = 1
+	CPUFLAGS += -march=armv8-a
+	CPUFLAGS += -DHOST_CPU=0x20000006 -DTARGET_LINUX_ARMv8 -frename-registers -DNOSSE -D__NEON_OPT
+	CFLAGS += -O2 -mcpu=cortex-a53 -mtune=cortex-a53 $(CPUFLAGS)
+	CXXFLAGS += -O2 -mcpu=cortex-a53 -mtune=cortex-a53 $(CPUFLAGS)
+	ASFLAGS += $(CFLAGS) -c -frename-registers -fno-strict-aliasing -ffast-math -ftree-vectorize
+	PLATFORM_EXT := unix
+	WITH_DYNAREC=arm64
+	HAVE_GENERIC_JIT = 0
+	HAVE_VULKAN = 0
+	HAVE_LTCG = 0
+	CORE_DEFINES += -DLOW_END
+	LDFLAGS += -static-libgcc -static-libstdc++
+#######################################
+
+# Generic AArch64 Cortex-A35 OpenGL ES 2.0 target (R36s)
+else ifeq ($(platform), arm64_cortex_a35_gles2)
+	EXT ?= so
+	TARGET := $(TARGET_NAME)_libretro.$(EXT)
+	SHARED += -shared -Wl,--version-script=link.T
+	LDFLAGS +=  -Wl,--no-undefined
+	CC_AS    = ${CC_PREFIX}${CC} #The ngen_arm.S must be compiled with gcc, not as
+	fpic = -fPIC
+	LIBS += -lrt
+	ARM_FLOAT_ABI_HARD = 0
+	FORCE_GLES = 1
+	SINGLE_PREC_FLAGS = 1
+	CPUFLAGS += -DHOST_CPU=0x20000006 -DTARGET_LINUX_ARMv8 -frename-registers
+	CFLAGS += -O2 -mcpu=cortex-a35 -mtune=cortex-a35 $(CPUFLAGS)
+	CXXFLAGS +=-O2 -mcpu=cortex-a35 -mtune=cortex-a35 $(CPUFLAGS)
+	ASFLAGS += $(CFLAGS) -c -frename-registers -fno-strict-aliasing -ffast-math -ftree-vectorize
+	PLATFORM_EXT := unix
+	WITH_DYNAREC=arm64
+	HAVE_GENERIC_JIT = 0
+	HAVE_VULKAN = 0
+	HAVE_LTCG = 0
+	CORE_DEFINES += -DLOW_END
+
+
+
 # Classic Platforms #####################
 # Platform affix = classic_<ISA>_<µARCH>
 #########################################
@@ -272,7 +323,7 @@ else ifeq ($(platform), classic_armv7_a7)
 	CORE_DEFINES += -DLOW_END -DLOW_RES
 #########################################
 # (armv8 a35, hard point, neon based) ###
-# PlayStation Classic
+# PlayStation Classic, R36s & clones 32 bit
 else ifeq ($(platform), classic_armv8_a35)
 	EXT    ?= so
 	TARGET := $(TARGET_NAME)_libretro.$(EXT)
@@ -282,26 +333,23 @@ else ifeq ($(platform), classic_armv8_a35)
 	ARM_FLOAT_ABI_HARD = 1
 	FORCE_GLES = 1
 	SINGLE_PREC_FLAGS = 1
-	HAVE_LTCG = 0
 	HAVE_OPENMP = 0
 	CFLAGS += -Ofast \
-	-fuse-linker-plugin \
 	-fno-stack-protector -fno-ident -fomit-frame-pointer \
 	-fmerge-all-constants -ffast-math -funroll-all-loops \
 	-marm -mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard
 	CXXFLAGS += $(CFLAGS)
 	ASFLAGS += $(CFLAGS)
-	LDFLAGS += -marm -mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard -Ofast -flto -fuse-linker-plugin
+	LDFLAGS += -marm -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -Ofast 
 	PLATFORM_EXT := unix
 	WITH_DYNAREC = arm
 	HAVE_GENERIC_JIT = 0
-	CORE_DEFINES += -DLOW_END -DLOW_RES
+	CORE_DEFINES += -DLOW_END 
 	
 #########################################
 
 # sun8i Allwinner H2+ / H3 for mainline Builds
 # like Orange PI, Nano PI, Banana PI, Tritium, Sunvell R69, AlphaCore2
-# Miyoo A30
 # by MPCORE-HUB/Liontek1985
 
 else ifeq ($(platform), sun8i)
@@ -387,6 +435,7 @@ else ifeq ($(platform), arm64_cortex_a53_gles2)
 	TARGET := $(TARGET_NAME)_libretro.$(EXT)
 	SHARED += -shared -Wl,--version-script=link.T
 	LDFLAGS +=  -Wl,--no-undefined
+	CC_AS    = ${CC_PREFIX}${CC} #The ngen_arm.S must be compiled with gcc, not as
 	fpic = -fPIC
 	LIBS += -lrt
 	ARM_FLOAT_ABI_HARD = 0
