@@ -225,9 +225,9 @@ void main()
 		#endif
 		
 		#if pp_BumpMap == 1
-			highp float s = PI / 2.0 * (texcol.a * 15.0 * 16.0 + texcol.r * 15.0) / 255.0;
-			highp float r = 2.0 * PI * (texcol.g * 15.0 * 16.0 + texcol.b * 15.0) / 255.0;
-			texcol.a = clamp(vtx_offs.a + vtx_offs.r * sin(s) + vtx_offs.g * cos(s) * cos(r - 2.0 * PI * vtx_offs.b), 0.0, 1.0);
+			highp float s = 1.5707963 * (texcol.a * 240.0 + texcol.r * 15.0) / 255.0;
+			highp float r = 6.2831852 * (texcol.g * 240.0 + texcol.b * 15.0) / 255.0;
+			texcol.a = clamp(vtx_offs.a + vtx_offs.r * sin(s) + vtx_offs.g * cos(s) * cos(r - 6.2831852 * vtx_offs.b), 0.0, 1.0);
 			texcol.rgb = vec3(1.0, 1.0, 1.0);	
 		#else
 			#if pp_IgnoreTexA==1
@@ -376,21 +376,6 @@ PipelineShader *GetProgram(bool cp_AlphaTest, bool pp_InsideClipping,
 		shader->palette = palette;
 		CompilePipelineShader(shader);
 	}
-
-#ifdef RPI4_SET_UNIFORM_ATTRIBUTES_BUG
-	// rpi 4 has a bug where it does not save uniform and attribute state with
-	// the program, so they have to be reinit each time you reuse the program
-	glcache.UseProgram(shader->program);
-	//setup texture 0 as the input for the shader
-	GLuint gu=glGetUniformLocation(shader->program, "tex");
-	if (shader->pp_Texture==1)
-		glUniform1i(gu,0);
-	// Setup texture 1 as the fog table
-	gu = glGetUniformLocation(shader->program, "fog_table");
-	if (gu != -1)
-		glUniform1i(gu, 1);
-	ShaderUniforms.Set(shader);
-#endif
 
 	return shader;
 }
