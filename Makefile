@@ -255,6 +255,7 @@ else ifeq ($(platform), brick)
 #######################################
 
 # Generic AArch64 Cortex-A35 OpenGL ES 2.0 target (R36s)
+# ATTENTION - RE-ENABLE POSTPROCESS TO COMPILE at the meantime
 else ifeq ($(platform), arm64_cortex_a35_gles2)
 	EXT ?= so
 	TARGET := $(TARGET_NAME)_libretro.$(EXT)
@@ -334,13 +335,13 @@ else ifeq ($(platform), classic_armv8_a35)
 	FORCE_GLES = 1
 	SINGLE_PREC_FLAGS = 1
 	HAVE_OPENMP = 0
-	CFLAGS += -Ofast \
-	-fno-stack-protector -fno-ident -fomit-frame-pointer \
+	CFLAGS += -O3 \
+	-fno-stack-protector -fno-ident -fomit-frame-pointer  \
 	-fmerge-all-constants -ffast-math -funroll-all-loops \
-	-marm -mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard
+	-marm -mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard 
 	CXXFLAGS += $(CFLAGS)
 	ASFLAGS += $(CFLAGS)
-	LDFLAGS += -marm -mtune=cortex-a7 -mfpu=neon-vfpv4 -mfloat-abi=hard -Ofast 
+	LDFLAGS += -marm -mtune=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard -O3 
 	PLATFORM_EXT := unix
 	WITH_DYNAREC = arm
 	HAVE_GENERIC_JIT = 0
@@ -350,6 +351,7 @@ else ifeq ($(platform), classic_armv8_a35)
 
 # sun8i Allwinner H2+ / H3 for mainline Builds
 # like Orange PI, Nano PI, Banana PI, Tritium, Sunvell R69, AlphaCore2
+# Miyoo A30
 # by MPCORE-HUB/Liontek1985
 
 else ifeq ($(platform), sun8i)
